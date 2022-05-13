@@ -1,27 +1,83 @@
 package lee
 
-import "log"
+import (
+	"log"
+	"net/http"
+	"strings"
+)
 
 type router struct {
+	roots   map[string]*node
 	handers map[string]HandlerFunc
+}
+
+func parsePattern(pattern string) []string {
+	vs := strings.Split(pattern, "/")
+	var parts []string
+	for _, item := range vs {
+		if item != "" {
+			parts = append(parts, item)
+			if item[0] == '*' {
+				break
+			}
+		}
+	}
+	return parts
 }
 
 func newRouter() *router {
 	return &router{
+		roots:   make(map[string]*node),
 		handers: make(map[string]HandlerFunc),
 	}
 }
 
-func (r *router) addRouter(method string, pattern string, hander HandlerFunc) {
+// addRoute defines the method to add a route
+func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 	log.Printf("Route %4s - %s", method, pattern)
+	parts := parsePattern(pattern)
 	key := method + "_" + pattern
-	r.handers[key] = hander
+	if _, ok := r.roots[method]; !ok {
+		r.roots[method] = &node{}
+	}
+	r.roots[method].insert(pattern, parts, 0)
+	r.handers[key] = handler
 }
+
 func (r *router) handle(c *Context) {
-	key := c.Method + "_" + c.Path
-	if handler, ok := r.handers[key]; ok {
-		handler(c)
+	n, params := r.getRoute(c.Method, c.Path)
+	if n != nil {
+		c.Params = params
+		key := c.Method + "_" + n.pattern
+		r.handers[key](c)
+	} else {
+		c.String(http.StatusNotFound, "404 Not Found : %s", c.Path)
+	}
+
+}
+func (r *router) getRoute(method, path string) (*node, map[string]string) {
+	var searchParts = parsePattern(path)
+	var params = make(map[string]string)
+	root, ok := r.roots[method]
+	if !ok {
+		return nil, nil
+	}
+	n := root.search(searchParts, 0)
+	if n != nil {
+		parts := parsePattern(n.pattern)
+		for index, part := range parts {
+			if part[0] == ':' {
+				params[part[1:]] = searchParts[index]
+			}
+			if part[0] == '*' && len(part) != 1 {
+				params[part[1:]] = strings.Join(searchParts[index:], "/")
+				break
+
+			}
+		}
+		return n, params
 
 	}
+	return nil, nil
 
 }

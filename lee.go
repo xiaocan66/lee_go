@@ -21,23 +21,14 @@ func New() *Engine {
 }
 
 func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	// key := req.Method + "_" + req.URL.Path
-	// method := engine.router[key]
-	// if method == nil {
-	// 	fmt.Fprintf(w, "Not Found :%s", req.URL.Path)
-	// } else {
-	// 	method(w, req)
-	// }
-
 	c := newContext(w, req)
 	engine.router.handle(c)
 }
 
-
 func (engine *Engine) AddRoute(method string, pattern string, hander HandlerFunc) {
-	key := method + "_" + pattern
-	engine.router.addRouter(key, pattern, hander)
+	engine.router.addRoute(method, pattern, hander)
 }
+
 // Get defines the method to add Get request
 func (engine *Engine) Get(pattern string, hander HandlerFunc) {
 	engine.AddRoute("GET", pattern, hander)
@@ -48,10 +39,12 @@ func (engine *Engine) Post(pattern string, hander HandlerFunc) {
 	engine.AddRoute("POST", pattern, hander)
 }
 
+// Delete defines the method to add Delete request
 func (engine *Engine) Delete(pattern string, hander HandlerFunc) {
 	engine.AddRoute("Delete", pattern, hander)
 }
 
+//Run defines the method to start a http server
 func (engine *Engine) Run(addr string) error {
 	return http.ListenAndServe(addr, engine)
 }

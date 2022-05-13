@@ -1,3 +1,3 @@
-module gee
+module lee
 
 go 1.18
