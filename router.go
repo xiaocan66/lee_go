@@ -8,7 +8,7 @@ import (
 
 type router struct {
 	roots   map[string]*node
-	handers map[string]HandlerFunc
+	handlers map[string]HandlerFunc
 }
 
 func parsePattern(pattern string) []string {
@@ -28,7 +28,7 @@ func parsePattern(pattern string) []string {
 func newRouter() *router {
 	return &router{
 		roots:   make(map[string]*node),
-		handers: make(map[string]HandlerFunc),
+		handlers: make(map[string]HandlerFunc),
 	}
 }
 
@@ -41,7 +41,7 @@ func (r *router) addRoute(method string, pattern string, handler HandlerFunc) {
 		r.roots[method] = &node{}
 	}
 	r.roots[method].insert(pattern, parts, 0)
-	r.handers[key] = handler
+	r.handlers[key] = handler
 }
 
 func (r *router) handle(c *Context) {
@@ -49,7 +49,7 @@ func (r *router) handle(c *Context) {
 	if n != nil {
 		c.Params = params
 		key := c.Method + "_" + n.pattern
-		c.handlers = append(c.handlers, r.handers[key])
+		c.handlers = append(c.handlers, r.handlers[key])
 	} else {
 		c.handlers = append(c.handlers, func(c *Context) {
 			c.String(http.StatusNotFound, "404 Not Found : %s", c.Path)
