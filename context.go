@@ -9,12 +9,14 @@ import (
 type H map[string]interface{}
 
 type Context struct {
-	Writer http.ResponseWriter
-	Req    *http.Request
-	Path   string
-	Params map[string]string
+	Writer     http.ResponseWriter
+	Req        *http.Request
+	Path       string
+	Params     map[string]string
 	Method     string
 	StatusCode int
+	handlers   []HandlerFunc
+	index      int
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -23,6 +25,17 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 		Req:    req,
 		Path:   req.URL.Path,
 		Method: req.Method,
+		index:  -1,
+	}
+
+}
+
+// Next 处理下一个中间件
+func (c *Context) Next() {
+	c.index++
+	s := len(c.handlers)
+	for ; c.index < s; c.index++ {
+		c.handlers[c.index](c)
 	}
 
 }
@@ -67,5 +80,8 @@ func (c *Context) HTML(code int, html string) {
 func (c *Context) Param(key string) string {
 	value, _ := c.Params[key]
 	return value
-
+}
+func (c *Context) Fail(code int, message string) {
+	c.Status(code)
+	c.Writer.Write([]byte(message))
 }

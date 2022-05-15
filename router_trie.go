@@ -50,7 +50,7 @@ func (n *node) insert(pattern string, parts []string, height int) {
 
 // search Define a method to find out whether there is a corresponding routing rule through 'parts'
 func (n *node) search(parts []string, height int) *node {
-	//Directly truncate when * appears
+	//Directly truncate when ‘*’ appears
 	if len(parts) == height || strings.HasPrefix(n.part, "*") {
 		if len(n.pattern) == 0 {
 			return nil
