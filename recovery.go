@@ -18,7 +18,6 @@ func Recovery() HandlerFunc {
 			}
 		}()
 		ctx.Next()
-
 	}
 }
 

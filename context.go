@@ -3,10 +3,14 @@ package lee
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"net/http"
 )
 
 type H map[string]interface{}
+
+// abortIndex 表示一个函数函数终止值
+const abortIndex int8 = math.MaxInt8 >> 1
 
 type Context struct {
 	Writer     http.ResponseWriter
@@ -17,7 +21,8 @@ type Context struct {
 	Method     string
 	StatusCode int
 	handlers   []HandlerFunc
-	index      int
+	index      int8
+	Keys       map[string]any
 }
 
 func newContext(w http.ResponseWriter, req *http.Request) *Context {
@@ -34,10 +39,42 @@ func newContext(w http.ResponseWriter, req *http.Request) *Context {
 // Next 处理下一个中间件
 func (c *Context) Next() {
 	c.index++
-	s := len(c.handlers)
-	for ; c.index < s; c.index++ {
+	s := int8(len(c.handlers))
+	for c.index < s {
 		c.handlers[c.index](c)
+		c.index++
 	}
+
+}
+
+// IsAbort 如果上下文被终止 返回true
+func (c *Context) IsAbort() bool {
+	return c.index >= abortIndex
+
+}
+
+// Abort 终止请求处理链 继续向下传递
+// 注意不会终止当前程序
+func (c *Context) Abort() {
+	c.index = abortIndex
+
+}
+
+func (c *Context) Set(key string, value any) {
+	if c.Keys == nil {
+		c.Keys = make(map[string]any)
+	}
+	fmt.Println(c.Keys)
+	c.Keys[key] = value
+
+}
+func (c *Context) Get(key string) (value any, exist bool) {
+
+	if c.Keys == nil {
+		return nil, false
+	}
+	value, exist = c.Keys[key]
+	return
 
 }
 func (c *Context) PostForm(key string) string {

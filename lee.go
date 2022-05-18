@@ -14,7 +14,7 @@ type Engine struct {
 	*RouterGroup
 	router       *router
 	groups       []*RouterGroup     // store all groups
-	htmlTemplate *template.Template //for heml render
+	htmlTemplate *template.Template //for html render
 	funcMap      template.FuncMap   // for html render
 }
 

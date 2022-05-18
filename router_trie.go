@@ -1,6 +1,7 @@
 package lee
 
 import (
+	"fmt"
 	"strings"
 )
 
@@ -9,6 +10,11 @@ type node struct {
 	part     string  // part of the route /:lang
 	children []*node // child node
 	isWild   bool    // Whether to match exactly part contains '*' or ':'
+}
+
+func (n *node) String() string {
+	return fmt.Sprintf("node{pattern:%s ,part:%s, isWild: %t }", n.pattern, n.part, n.isWild)
+
 }
 
 //mathchChild Returns the first node that matches successfully.
@@ -37,7 +43,6 @@ func (n *node) insert(pattern string, parts []string, height int) {
 	if len(parts) == height {
 		n.pattern = pattern
 		return
-
 	}
 	part := parts[height]
 	child := n.matchChild(part)
