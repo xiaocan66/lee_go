@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	errUnknownType           = errors.New("unknown  type")
+	ErrUnknownType           = errors.New("unknown  type")
 	ErrConvertMapStringSlice = errors.New("can not convert to slice of strings")
 	ErrConvertToMapString    = errors.New("can not convert to map of slice")
 )
@@ -68,6 +68,17 @@ func mapFormByTag(ptr any, form map[string][]string, tag string) error {
 	return mappingByPtr(ptr, formSource(form), tag)
 }
 
+func mapForm(ptr any, form map[string][]string) error {
+	return mapFormByTag(ptr, form, "form")
+}
+func mapURI(ptr any, form map[string][]string) error {
+	return mapFormByTag(ptr, form, "uri")
+
+}
+func MapFormWithTag(ptr any, form map[string][]string, tag string) error {
+	return mapFormByTag(ptr, form, tag)
+}
+
 func setFormMap(ptr any, form map[string][]string) error {
 	el := reflect.TypeOf(ptr).Elem()
 	if el.Kind() == reflect.Slice {
@@ -107,6 +118,7 @@ func mappingByPtr(ptr any, setter setter, tag string) error {
 	_, err := mapping(reflect.ValueOf(ptr), emptyField, setter, tag)
 	return err
 }
+
 func mapping(value reflect.Value, field reflect.StructField, setter setter, tag string) (bool, error) {
 	// just ignoring this field
 	if field.Tag.Get(tag) == "_" {
@@ -232,7 +244,7 @@ func setWithProperType(val string, value reflect.Value, field reflect.StructFiel
 	case reflect.Map:
 		return json.Unmarshal(bytesconv.StringToBytes(val), value.Addr().Interface())
 	default:
-		return errUnknownType
+		return ErrUnknownType
 	}
 
 	return nil

@@ -27,11 +27,11 @@ package main
 import "lee"
 
 func main(){
-  	r := lee.Default()
-	r.Get("/", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "Hello world")
-	})
-	r.Run(":9000")  
+      r := lee.Default()
+    r.Get("/", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "Hello world")
+    })
+    r.Run(":9000")  
 }
 ```
 
@@ -43,22 +43,22 @@ import "lee"
 
 // auth 定义中间件逻辑
 func auth() lee.HandlerFunc {
-	return func(ctx *lee.Context) {
-		username := ctx.Query("username")
-		if username == "lee" {
-			ctx.Next()
-		}
-		ctx.Abort()
-	}
+    return func(ctx *lee.Context) {
+        username := ctx.Query("username")
+        if username == "lee" {
+            ctx.Next()
+        }
+        ctx.Abort()
+    }
 }
 
 func main(){
-  	r := lee.Default()
+      r := lee.Default()
     r.Use(auth()) // 使用中间件
-	r.Get("/", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "Hello world")
-	})
-	r.Run(":9000")  
+    r.Get("/", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "Hello world")
+    })
+    r.Run(":9000")  
 }
 ```
 
@@ -66,19 +66,17 @@ func main(){
 
 ```go
 func main(){
-  	r := lee.Default()
+      r := lee.Default()
     r.Use(auth()) // 使用中间件
-	r.Get("/user/:username", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "Hello world")
-	})
+    r.Get("/user/:username", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "Hello world")
+    })
     r.Get("/assets/*filepath", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "Hello world")
-	})
-	r.Run(":9000")  
+        fmt.Fprint(ctx.Writer, "Hello world")
+    })
+    r.Run(":9000")  
 }
 ```
-
-
 
 ### 路由分组
 
@@ -88,42 +86,42 @@ import "lee"
 
 // auth 定义中间件逻辑
 func auth() lee.HandlerFunc {
-	return func(ctx *lee.Context) {
-		username := ctx.Query("username")
-		if username == "lee" {
-			ctx.Next()
-		}
-		ctx.Abort()
-	}
+    return func(ctx *lee.Context) {
+        username := ctx.Query("username")
+        if username == "lee" {
+            ctx.Next()
+        }
+        ctx.Abort()
+    }
 }
 func auth2() lee.HandlerFunc {
-	return func(ctx *lee.Context) {
-		username := ctx.Query("username")
-		if username == "lee2" {
-			ctx.Next()
-		}
-		ctx.Abort()
-	}
+    return func(ctx *lee.Context) {
+        username := ctx.Query("username")
+        if username == "lee2" {
+            ctx.Next()
+        }
+        ctx.Abort()
+    }
 }
 
 
 func main(){
-  	r := lee.Default()
-	r.Get("/", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "Hello world")
-	})
+      r := lee.Default()
+    r.Get("/", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "Hello world")
+    })
 
-	g1 := r.Group("v1")
-	g1.Use(auth())
-	g1.Get("/user", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "g1")
+    g1 := r.Group("v1")
+    g1.Use(auth())
+    g1.Get("/user", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "g1")
 
-	})
-	g2 := r.Group("v2")
-	g2.Use(auth2())
-	g2.Get("/post", func(ctx *lee.Context) {
-		fmt.Fprint(ctx.Writer, "g2")
-	})
-	r.Run(":9000")
+    })
+    g2 := r.Group("v2")
+    g2.Use(auth2())
+    g2.Get("/post", func(ctx *lee.Context) {
+        fmt.Fprint(ctx.Writer, "g2")
+    })
+    r.Run(":9000")
 }
 ```

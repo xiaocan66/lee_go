@@ -52,7 +52,6 @@ func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		if group.prefix == "" || prefix == group.prefix {
 			middlewares = append(middlewares, group.middlewares...)
 		}
-
 	}
 	c := newContext(w, req)
 	c.engine = engine

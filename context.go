@@ -3,6 +3,7 @@ package lee
 import (
 	"encoding/json"
 	"fmt"
+	"lee/binding"
 	"math"
 	"net/http"
 )
@@ -57,7 +58,6 @@ func (c *Context) IsAbort() bool {
 // 注意不会终止当前程序
 func (c *Context) Abort() {
 	c.index = abortIndex
-
 }
 
 func (c *Context) Set(key string, value any) {
@@ -66,10 +66,8 @@ func (c *Context) Set(key string, value any) {
 	}
 	fmt.Println(c.Keys)
 	c.Keys[key] = value
-
 }
 func (c *Context) Get(key string) (value any, exist bool) {
-
 	if c.Keys == nil {
 		return nil, false
 	}
@@ -104,11 +102,11 @@ func (c *Context) JSON(code int, obj interface{}) {
 	if err := encoder.Encode(obj); err != nil {
 		http.Error(c.Writer, err.Error(), 500)
 	}
-
 }
 func (c *Context) Data(code int, data []byte) {
 	c.Status(code)
 	c.Writer.Write(data)
+
 }
 func (c *Context) HTML(code int, name string, data interface{}) {
 	c.SetHeader("Content-Type", "text/html")
@@ -124,4 +122,25 @@ func (c *Context) Param(key string) string {
 func (c *Context) Fail(code int, message string) {
 	c.Status(code)
 	c.Writer.Write([]byte(message))
+}
+
+func (c *Context) ContentType() string {
+
+	return filterFlags(c.Req.Header.Get("Content-Type"))
+}
+// ShouldBind checks the Method and Content-Type  to select a binding engine automatically
+// Deepending on the "Content-Type" header different binding are used ,for example
+// "application/json" --> Json binding
+// "application/xml" --> Xml binding
+// It parses the request's body as Json if Content-Type == "application/json" using Json or XML as a Json input
+// It decodes the json playload into the  struct specified as a  pointer.
+// Like c.Bind() but this method does not set the response status code to 400 or abort if  input is not valid.
+func (c *Context) ShouldBind(obj any) error {
+	b := binding.Default(c.Method, c.ContentType())
+	return c.ShouldBindWith(obj, b)
+}
+
+// ShouldBindWith
+func (c *Context) ShouldBindWith(obj any, b binding.Binding) error {
+	return b.Bind(c.Req, obj)
 }

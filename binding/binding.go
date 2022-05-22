@@ -5,11 +5,22 @@ import (
 )
 
 const (
-	MIMEJSON = "application/json"
+	MIMEJSON              = "application/json"
+	MIMEHTL               = "text/html"
+	MIMEXML               = "application/xml"
+	MIMEXML2              = "text/xml"
+	MIMEPlain             = "text/plain"
+	MIMEPOSTForm          = "application/x-www-form-urlencoded"
+	MIMEMultipartPOSTForm = "multipart/form-data"
+	MIMEPROTOBUF          = "application/x-protobuf"
 )
 
 var (
-	Form = formBiding{}
+	Form          = formBiding{}
+	FormPost      = formPostBinding{}
+	FormMultipart = formMultipartBinding{}
+
+	Json = jsonBinding{}
 )
 
 type Binding interface {
@@ -22,5 +33,16 @@ func Default(method, contentType string) Binding {
 	if method == http.MethodGet {
 		return Form
 	}
-	return nil
+	switch contentType {
+	case MIMEJSON:
+		return Json
+	case MIMEMultipartPOSTForm:
+		return FormMultipart
+	case MIMEPOSTForm:
+		return FormPost
+	default:
+		return Form
+
+	}
+
 }
